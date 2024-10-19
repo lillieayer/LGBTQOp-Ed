@@ -34,7 +34,9 @@ source virtualenv/bin/activate
 ```
 
 Then once the environment is active, run the following command to download all needed dependencies: 
-```pip install -r requirements.txt```
+```
+pip install -r requirements.txt
+```
 
 ## Usage
 Populate the links.txt to run the Facebook scraper to run through posts you would like to gather the comments from. For the reddit scraper utilize the custom class that queries subreddits for specific keywords. 
