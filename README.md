@@ -5,6 +5,7 @@ Disinfolab is the first undergraduate led political misinformation think tank wh
 This automated data collection tool is meant to scrape social media content identified as disinformation in order to support a political op-ed article investigating the spread and influence of untrue homophobic narratives on social media.
 The content is then analyzed for performance metrics to identify patterns in the content trail that parallels Russia's Firehose of Falsehoods propaganda strategy. 
 
+### Campaign Model Traits
 Firehose of Falsehoods model is distinguished by these factors:
 - Content is spread in high volume, and multiple channels
 - Content is rapid, continuous, and repetitive
