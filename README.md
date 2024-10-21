@@ -19,10 +19,9 @@ Clone the repo:
 ```
 git clone [link to repo]
 ```
-
-Set up all necessary dependencies in your own virtual environment by running on your command-line first:
+Navigate to project directory and set up all necessary dependencies in your own virtual environment by running on your command-line first:
 ```
-python -m venv virtualenv
+python -m venv worflow/virtualenv
 ```
 Then activate it according to your computer:
 ### macOS (or Linux)
