@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
-from dotenv import load_dotenv, dotenv_values # type: ignore
+from dotenv import load_dotenv, dotenv_values 
 
 '''
     This is an improved version of scraper that
@@ -20,9 +20,9 @@ from dotenv import load_dotenv, dotenv_values # type: ignore
 '''
 config = dotenv_values(".env") 
 
-
+#lori42898
 EMAIL = config["FB_EMAIL"]
-PASSWORD = config["FB_PW"]
+PASSWORD = config["FB_PASSWORD"]
 '''
 - links bounds are one off, need additional space at end of link in links.txt
 - lines in links.txt file matter, interprets empty lines as links
@@ -31,7 +31,7 @@ PASSWORD = config["FB_PW"]
 
 def login_to_facebook(driver):
     driver.get('https://www.facebook.com/')
-    time.sleep(2)  # Wait for the page to load
+    time.sleep(3)  # Wait for the page to load
 
     email_input = driver.find_element(By.NAME, 'email')
     email_input.send_keys(EMAIL)
@@ -39,7 +39,7 @@ def login_to_facebook(driver):
     password_input = driver.find_element(By.NAME, 'pass')
     password_input.send_keys(PASSWORD)
     password_input.send_keys(Keys.RETURN)
-    time.sleep(5)  # Wait for login to complete
+    time.sleep(20)  # Wait for login to complete
 
 def click_comment_button(driver):
     try:
@@ -223,23 +223,38 @@ def load_side_comments(driver: webdriver.Chrome):
             print(f"Error: {e}")
             break
 
-if __name__ == '__main__':
-    chrome_options = Options()
-    driver = webdriver.Chrome(options=chrome_options)
 
-    with open('links.txt', 'r') as file:
-        # this drops the empty line at the end of the file
-        # that line is necessary to make the last link end in '\n'
-        # # but is unneeded for the rest of the program
-        links = file.readlines()
+'''Extracts comments from Web Elements and stores result'''
+def clean_and_store_comments(comments, storage):
+    for comment in comments:
+        comment_data = {}
+        # Extract and split the comment text
+        text_parts = comment.text.split("\n")
+        offset = 0
+        try:
+            if text_parts[2] == "Follow":
+                offset += 2
 
-    login_to_facebook(driver)
+        except:
+            continue
+        comment_data['author'] = text_parts[0] if len(text_parts) > 0 else "Unknown"
+        comment_data['content'] = text_parts[1+offset] if len(text_parts) > 1 else ""
+        comment_data['time_posted'] = text_parts[2+offset] if len(text_parts) > 2 else "Unknown"
+        comment_data['reactions'] = text_parts[-1]
+        print(text_parts)
+        print(comment_data)
+        if (comment_data['time_posted'] != 'Like'):
+            storage.append(comment_data)
 
-    comments_data = []  # To store all comments
-    for link in links:
-        driver.get(link[:-1]) 
+''' Returns comments from a FaceBook post as WebElements using selenium
+    ** Note: does not store comments in json'''
+def fetch_comments_from_post(link, driver):
+    # test if browser can open link
+    comments = []
+    try:
+        driver.get(link)
         print(f"{'facebook.com/watch/live' in link} is the boolean answer")
-        #  load comments
+            #  load comments
         if ('facebook.com/reel' in link):
             click_comment_button(driver)
         elif ('facebook.com/watch/live' in link):
@@ -251,33 +266,53 @@ if __name__ == '__main__':
 
         # find and press a translation button
         click_translate_buttons(driver)
-        # Find all comments
+            # Find all comments
         comments = driver.find_elements(By.XPATH, '//*[starts-with(@aria-label, "Comment by")]')
+    except:
+        print(f"Failed to load post: {link}")
+    return comments
 
-        for comment in comments:
-            comment_data = {}
 
-            # Extract and split the comment text
-            text_parts = comment.text.split("\n")
-            offset = 0
-            try:
-                if text_parts[2] == "Follow":
-                    offset += 2
+'''Will get and store all comments into dictionary and return it
+    helper function for extracting comments from links in multiple files
+    ** Note: does not store comments in json'''
+def fetch_comments_from_links(links, driver):
+    all_posts_comments = {}  # To store all comments from file
+    for link in links:
+        # start entry for current link 
+        all_posts_comments[link] = []
+        comments = fetch_comments_from_post(link, driver)
+        
+        clean_and_store_comments(comments,all_posts_comments[link])         
 
-            except:
-                continue
-            comment_data['author'] = text_parts[0] if len(text_parts) > 0 else "Unknown"
-            comment_data['content'] = text_parts[1+offset] if len(text_parts) > 1 else ""
-            comment_data['time_posted'] = text_parts[2+offset] if len(text_parts) > 2 else "Unknown"
-            comment_data['reactions'] = text_parts[-1]
-            print(text_parts)
-            print(comment_data)
-            if (comment_data['time_posted'] != 'Like'):
-                comments_data.append(comment_data)
+    return all_posts_comments
 
-    # Export data to a JSON file
-    with open('comments.json', 'w', encoding='utf-8') as f:
-        json.dump(comments_data, f, ensure_ascii=False, indent=4)
+'''Extracts all WebElements that are comments from a Facebook post using links from multiple files'''
+def extract_comments_from_files(files, driver):
+    for f in files:
+        with open(f, 'r') as file:
+            # cleans out \n and then empty space in list of links
+            links = [line.strip() for line in file.readlines()]
+            links = [link for link in links if link != '']
+        # get dictionary of post comments from all links listed in multiple files
+        all_comments_dict = fetch_comments_from_links(links, driver)
+        # Export data to a JSON file
+        filename = f.split('.')
+        # create a json for each file displaying each link with their respective comments
+        with open(filename[0] + '_comments.json', 'w', encoding='utf-8') as comment_file:
+            json.dump(all_comments_dict, comment_file, ensure_ascii=False, indent=4)
+
+
+if __name__ == '__main__':
+    chrome_options = Options()
+    driver = webdriver.Chrome(options=chrome_options)
+    files = ['snopes_links.txt','politifact_links.txt']
+    login_to_facebook(driver)
+
+    freedom_comments = fetch_comments_from_post('https://www.facebook.com/FreedomProjectUSA/posts/287827612147462/', driver)
+    with open('freedom_post_comments.json', 'w', encoding='utf-8') as file:
+        json.dump(freedom_comments, file, ensure_ascii=False, indent=4)
+   
 
     # Close the browser
     input("finished")
