@@ -224,7 +224,10 @@ def load_side_comments(driver: webdriver.Chrome):
             break
 
 
-'''Extracts comments from Web Elements and stores result'''
+'''Extracts comments from Web Elements and stores result
+    param1: comments --> list obj of WebElements from selenium
+    param2: storage --> any dictionary or list to store dictionary of comments in
+    ** Note: this is essential before storing comments in json'''
 def clean_and_store_comments(comments, storage):
     for comment in comments:
         comment_data = {}
@@ -270,13 +273,15 @@ def fetch_comments_from_post(link, driver):
         comments = driver.find_elements(By.XPATH, '//*[starts-with(@aria-label, "Comment by")]')
     except:
         print(f"Failed to load post: {link}")
-    return comments
+    all_comments = []
+    clean_and_store_comments(comments, all_comments)
+    return all_comments
 
 
 '''Will get and store all comments into dictionary and return it
     helper function for extracting comments from links in multiple files
     ** Note: does not store comments in json'''
-def fetch_comments_from_links(links, driver):
+def fetch_cleaned_comments_from_links(links, driver):
     all_posts_comments = {}  # To store all comments from file
     for link in links:
         # start entry for current link 
@@ -295,7 +300,7 @@ def extract_comments_from_files(files, driver):
             links = [line.strip() for line in file.readlines()]
             links = [link for link in links if link != '']
         # get dictionary of post comments from all links listed in multiple files
-        all_comments_dict = fetch_comments_from_links(links, driver)
+        all_comments_dict = fetch_cleaned_comments_from_links(links, driver)
         # Export data to a JSON file
         filename = f.split('.')
         # create a json for each file displaying each link with their respective comments
