@@ -1,4 +1,4 @@
-from fb_scraper import *
+from content_scrapers.fb_scraper import *
 
 config = dotenv_values(".env") 
 
