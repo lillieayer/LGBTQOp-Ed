@@ -273,8 +273,8 @@ def fetch_comments_from_post(link, driver):
         comments = driver.find_elements(By.XPATH, '//*[starts-with(@aria-label, "Comment by")]')
     except:
         print(f"Failed to load post: {link}")
-    all_comments = []
-    clean_and_store_comments(comments, all_comments)
+    all_comments = {link:[]}
+    clean_and_store_comments(comments, all_comments[link])
     return all_comments
 
 
@@ -282,13 +282,10 @@ def fetch_comments_from_post(link, driver):
     helper function for extracting comments from links in multiple files
     ** Note: does not store comments in json'''
 def fetch_cleaned_comments_from_links(links, driver):
-    all_posts_comments = {}  # To store all comments from file
+    all_posts_comments = []  # To store all comments from file
     for link in links:
-        # start entry for current link 
-        all_posts_comments[link] = []
-        comments = fetch_comments_from_post(link, driver)
-        
-        clean_and_store_comments(comments,all_posts_comments[link])         
+        post_comments = fetch_comments_from_post(link, driver)  
+        all_posts_comments.append(post_comments)     
 
     return all_posts_comments
 
@@ -299,13 +296,12 @@ def extract_comments_from_files(files, driver):
             # cleans out \n and then empty space in list of links
             links = [line.strip() for line in file.readlines()]
             links = [link for link in links if link != '']
-        # get dictionary of post comments from all links listed in multiple files
-        all_comments_dict = fetch_cleaned_comments_from_links(links, driver)
-        # Export data to a JSON file
+        # get all post comments from all links listed in file
+        all_comments = fetch_cleaned_comments_from_links(links, driver)
         filename = f.split('.')
         # create a json for each file displaying each link with their respective comments
         with open(filename[0] + '_comments.json', 'w', encoding='utf-8') as comment_file:
-            json.dump(all_comments_dict, comment_file, ensure_ascii=False, indent=4)
+            json.dump(all_comments, comment_file, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
@@ -313,12 +309,7 @@ if __name__ == '__main__':
     driver = webdriver.Chrome(options=chrome_options)
     files = ['snopes_links.txt','politifact_links.txt']
     login_to_facebook(driver)
-
-    freedom_comments = fetch_comments_from_post('https://www.facebook.com/FreedomProjectUSA/posts/287827612147462/', driver)
-    with open('freedom_post_comments.json', 'w', encoding='utf-8') as file:
-        json.dump(freedom_comments, file, ensure_ascii=False, indent=4)
-   
-
+    extract_comments_from_files(files,driver)
     # Close the browser
     input("finished")
     driver.quit()
