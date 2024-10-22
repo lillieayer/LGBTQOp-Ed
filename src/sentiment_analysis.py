@@ -24,8 +24,8 @@ def extract_sentiment():
 
         # PT
     model = AutoModelForSequenceClassification.from_pretrained(MODEL)
-    model.save_pretrained(MODEL)
-    text = "Absolutely wonderful Andy Reed . Great Kansas City Chiefs."
+    #model.save_pretrained(MODEL)
+    text = "I hate you"
     encoded_input = tokenizer(text, return_tensors='pt')
     output = model(**encoded_input)
     scores = output[0][0].detach().numpy()

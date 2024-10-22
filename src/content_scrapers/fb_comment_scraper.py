@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
-from dotenv import load_dotenv, dotenv_values 
+from dotenv import load_dotenv, dotenv_values  
 
 '''
     This is an improved version of scraper that
@@ -18,11 +18,16 @@ from dotenv import load_dotenv, dotenv_values
     #make a file in the same directory called links.txt and put in a link per line with one empty line at the end 
 
 '''
-config = dotenv_values(".env") 
 
-#lori42898
-EMAIL = config["FB_EMAIL"]
-PASSWORD = config["FB_PASSWORD"]
+'''Returns tuple of facebook credentials'''
+def load_fb_credentials():
+    load_dotenv()
+    config = dotenv_values(".env") 
+    EMAIL = config['FB_EMAIL']
+    PASSWORD = config['FB_PASSWORD']
+    creds =  (EMAIL, PASSWORD)
+    return creds
+
 '''
 - links bounds are one off, need additional space at end of link in links.txt
 - lines in links.txt file matter, interprets empty lines as links
@@ -30,16 +35,18 @@ PASSWORD = config["FB_PASSWORD"]
 - analyze sentiments --> how many comments are in support and then how many likes/replies they get'''
 
 def login_to_facebook(driver):
+
     driver.get('https://www.facebook.com/')
     time.sleep(3)  # Wait for the page to load
+    creds = load_fb_credentials()
 
     email_input = driver.find_element(By.NAME, 'email')
-    email_input.send_keys(EMAIL)
+    email_input.send_keys(creds[0])
 
     password_input = driver.find_element(By.NAME, 'pass')
-    password_input.send_keys(PASSWORD)
+    password_input.send_keys(creds[1])
     password_input.send_keys(Keys.RETURN)
-    time.sleep(20)  # Wait for login to complete
+    time.sleep(5)  # Wait for login to complete
 
 def click_comment_button(driver):
     try:
@@ -292,7 +299,8 @@ def fetch_cleaned_comments_from_links(links, driver):
 '''Extracts all WebElements that are comments from a Facebook post using links from multiple files'''
 def extract_comments_from_files(files, driver):
     for f in files:
-        with open(f, 'r') as file:
+        filepath = './links/' + f
+        with open(filepath, 'r') as file:
             # cleans out \n and then empty space in list of links
             links = [line.strip() for line in file.readlines()]
             links = [link for link in links if link != '']
@@ -300,14 +308,14 @@ def extract_comments_from_files(files, driver):
         all_comments = fetch_cleaned_comments_from_links(links, driver)
         filename = f.split('.')
         # create a json for each file displaying each link with their respective comments
-        with open(filename[0] + '_comments.json', 'w', encoding='utf-8') as comment_file:
+        with open('./output1/' + filename[0] + '_comments.json', 'w', encoding='utf-8') as comment_file:
             json.dump(all_comments, comment_file, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
     chrome_options = Options()
     driver = webdriver.Chrome(options=chrome_options)
-    files = ['snopes_links.txt','politifact_links.txt']
+    files = ['fb_links.txt', 'snopes_links.txt', 'politifact_links.txt', 'checkyourfact_links.txt']
     login_to_facebook(driver)
     extract_comments_from_files(files,driver)
     # Close the browser

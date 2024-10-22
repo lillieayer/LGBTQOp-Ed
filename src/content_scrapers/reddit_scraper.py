@@ -15,6 +15,7 @@ class RedditScraper:
         self.sub = subreddit
         self.posts = []
 
+    '''Reddit front are posts that have the most upvotes within a period of time, older content is at the bottom'''
     def search_all_reddit_by_keywords(self, keywords, limit=100):
         for submission in self.scraper.front.hot(limit=limit):
             pass
