@@ -1,4 +1,0 @@
-.env
-virtualenv/
-__pycache__
-cardiffnlp
