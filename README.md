@@ -45,6 +45,9 @@ Populate the links.txt to run the Facebook scraper to run through posts you woul
 
 ## Citations
 This project uses a sentiment analysis NLP model trained on ~58 M tweets and finetuned using the TweetEval Benchark:
+
 Authors: Francesco Barbieri, Jose Camacho-Collados, Luis Espinosa Anke and Leonardo Neves
+
 URL: https://aclanthology.org/2020.findings-emnlp.148
+
 GitHub: https://github.com/cardiffnlp/tweeteval
