@@ -1,4 +1,4 @@
-# LGBTQ Op Ed Tool
+# LGBTQ+ Op Ed Tool
 
 ## Description:
 Disinfolab is the first undergraduate led political misinformation think tank where student research groups produce their own investigation into contentious disinformation on the internet.
