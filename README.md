@@ -23,7 +23,7 @@ git clone [link to repo]
 ```
 Navigate to project directory and set up all necessary dependencies in your own virtual environment by running on your command-line first:
 ```
-python -m venv workflow/virtualenv
+python -m venv virtualenv
 ```
 Then activate it according to your computer:
 ### macOS (or Linux)
