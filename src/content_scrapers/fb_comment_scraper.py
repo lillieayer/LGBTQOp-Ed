@@ -34,7 +34,7 @@ def load_fb_credentials():
 - interprets comments and their child elements but gets confused when commenter posts links (interprets as another element doesnt group in body) --> shifts element recording 
 - analyze sentiments --> how many comments are in support and then how many likes/replies they get'''
 
-def login_to_facebook(driver):
+def login_to_facebook(driver:webdriver.Chrome):
 
     driver.get('https://www.facebook.com/')
     time.sleep(3)  # Wait for the page to load
@@ -48,7 +48,7 @@ def login_to_facebook(driver):
     password_input.send_keys(Keys.RETURN)
     time.sleep(5)  # Wait for login to complete
 
-def click_comment_button(driver):
+def click_comment_button(driver:webdriver.Chrome):
     try:
         print("Clicking comment button...")
         
@@ -79,7 +79,7 @@ def click_comment_button(driver):
     except Exception as e:
         print(f"Error: {e}")
 
-def click_comment_button_live_case(driver):
+def click_comment_button_live_case(driver:webdriver.Chrome):
     try:
         print("Clicking comment button...")
         
@@ -110,7 +110,7 @@ def click_comment_button_live_case(driver):
     except Exception as e:
         print(f"Error: {e}")
 
-def click_translate_buttons(driver):
+def click_translate_buttons(driver:webdriver.Chrome):
     try:
         # Find all translate buttons for comments
         translate_buttons = driver.find_elements(By.XPATH, "//div[@role='button' and contains(text(), 'See translation')]")
@@ -233,9 +233,9 @@ def load_side_comments(driver: webdriver.Chrome):
 
 '''Extracts comments from Web Elements and stores result
     param1: comments --> list obj of WebElements from selenium
-    param2: storage --> any dictionary or list to store dictionary of comments in
+    param2: storage --> any list to store dictionary of comments in
     ** Note: this is essential before storing comments in json'''
-def clean_and_store_comments(comments, storage):
+def clean_and_store_comments(comments: list, storage:list):
     for comment in comments:
         comment_data = {}
         # Extract and split the comment text
@@ -262,8 +262,9 @@ def fetch_comments_from_post(link, driver):
     # test if browser can open link
     comments = []
     try:
+        # move this later when shares/likes/comments
         driver.get(link)
-        print(f"{'facebook.com/watch/live' in link} is the boolean answer")
+        print(f"is post a watch live: {'facebook.com/watch/live' in link}")
             #  load comments
         if ('facebook.com/reel' in link):
             click_comment_button(driver)
@@ -288,7 +289,7 @@ def fetch_comments_from_post(link, driver):
 '''Will get and store all comments into dictionary and return it
     helper function for extracting comments from links in multiple files
     ** Note: does not store comments in json'''
-def fetch_cleaned_comments_from_links(links, driver):
+def fetch_cleaned_comments_from_links(links:list, driver:webdriver.Chrome):
     all_posts_comments = []  # To store all comments from file
     for link in links:
         post_comments = fetch_comments_from_post(link, driver)  
@@ -297,7 +298,7 @@ def fetch_cleaned_comments_from_links(links, driver):
     return all_posts_comments
 
 '''Extracts all WebElements that are comments from a Facebook post using links from multiple files'''
-def extract_comments_from_files(files, driver):
+def extract_comments_from_files(files, driver:webdriver.Chrome):
     for f in files:
         filepath = './links/' + f
         with open(filepath, 'r') as file:
