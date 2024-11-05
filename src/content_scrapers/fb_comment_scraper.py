@@ -308,14 +308,14 @@ def extract_comments_from_files(files, driver):
         all_comments = fetch_cleaned_comments_from_links(links, driver)
         filename = f.split('.')
         # create a json for each file displaying each link with their respective comments
-        with open('./output1/' + filename[0] + '_comments.json', 'w', encoding='utf-8') as comment_file:
+        with open('./output/' + filename[0] + '_comments.json', 'w', encoding='utf-8') as comment_file:
             json.dump(all_comments, comment_file, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
     chrome_options = Options()
     driver = webdriver.Chrome(options=chrome_options)
-    files = ['fb_links.txt', 'snopes_links.txt', 'politifact_links.txt', 'checkyourfact_links.txt']
+    files = ['tim_walz_tampons.txt', 'target_bathing_suits.txt', 'lakewood_church_shooter.txt']
     login_to_facebook(driver)
     extract_comments_from_files(files,driver)
     # Close the browser
