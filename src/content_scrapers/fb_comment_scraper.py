@@ -318,6 +318,7 @@ if __name__ == '__main__':
     driver = webdriver.Chrome(options=chrome_options)
     files = ['tim_walz_tampons.txt', 'target_bathing_suits.txt', 'lakewood_church_shooter.txt']
     login_to_facebook(driver)
+
     extract_comments_from_files(files,driver)
     # Close the browser
     input("finished")
