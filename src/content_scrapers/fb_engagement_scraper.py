@@ -14,11 +14,12 @@ from enum import Enum
 # to add abstraction, maps to index of items in reactions_path array
 
 class Post(Enum):
-    TITLE = "//div[@role='dialog']//h2//span[text()]"
-    REACTIONS =  "//div[@role='dialog']//div[contains(text(), 'All reactions:')]/following-sibling::span[1]//span[text()]"
+    CONTENT = "//div[@data-ad-preview='message']//div[text()]"
+    REACTIONS =  "//div[contains(text(), 'All reactions:')]/following-sibling::span[1]//span[text()]"
     COMMENTS_SHARES = "//div[@role='button']//span[starts-with(@class, 'html-span') and text()]"
 class Video(Enum):
-    TITLE = "//div[@id='watch_feed']//span[text()]"
+    # content and comments doesn't work
+    CONTENT = "//div[@role='banner']/following-sibling::div[1]//div[not(@role='tablist') and not(@role='tab') and not(@role='none')]//span[text()]"
     REACTIONS = "//span[@aria-label='See who reacted to this' and @role='toolbar']/following-sibling::*[1]//span[text()]"
     COMMENTS = "//div[@role='button]//span[contains(text(),'comments')]"
 
@@ -30,8 +31,8 @@ def get_num_comments_shares_from_post(driver:webdriver.Chrome)-> Tuple[str,str]:
     shares = engagements[1].text
     return comments,shares
            
-def extract_num_engagements_from_post(driver:webdriver.Chrome, post_type:Enum)->str:
-    engagements = {}
+def extract_num_engagements_from_post(driver:webdriver.Chrome, post_type:Enum, link:str)->str:
+    engagements = {'LINK':link}
     # for 
     try:
         for metric in post_type:
@@ -44,19 +45,23 @@ def extract_num_engagements_from_post(driver:webdriver.Chrome, post_type:Enum)->
                 comments, shares = get_num_comments_shares_from_post(driver)
                 engagements['COMMENTS'] = comments
                 engagements['SHARES'] = shares
-        print(engagements)
+        return engagements
         
 
     except Exception as e:
         print("Can't find reaction element!", e)
 
+def print_dict(d:dict):
+    for key,val in d:
+        print(f"{key} --> {val}")
 
 if __name__ == '__main__':
     chrome_options = Options()
     driver = webdriver.Chrome(options=chrome_options)
-    login_to_facebook(driver)
-    driver.get('https://www.facebook.com/permalink.php?story_fbid=pfbid02sSKEQDhuir19DXixnBJv6XAGfHMfyK89YA5t1GvtWUBo3nUC9USdagW3E9pK2oKGl&id=61553573245040')
-    extract_num_engagements_from_post(driver)
+    driver.get('https://www.facebook.com/realCharlieKirk/videos/398264105959809/')
+    engagement = WebDriverWait(driver, 10).until( EC.presence_of_element_located((By.XPATH, Video.REACTIONS.value)))
+    print(engagement.text)
+    #extract_num_engagements_from_post(driver,Post)
     # Close the browser
     input("finished")
     driver.quit()
