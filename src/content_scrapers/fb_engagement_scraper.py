@@ -8,60 +8,55 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from dotenv import load_dotenv, dotenv_values 
 from fb_comment_scraper import *
+from typing import Tuple
 from enum import Enum
 
 # to add abstraction, maps to index of items in reactions_path array
-class Media(Enum):
-    POST = 0
-    VIDEO = 1
 
-''' Store xpath references to find reactions element in different types of fb media (posts, lives, reels) as keys
-and then hold their different engagements '''
-reactions_xpath = [ "//div[contains(text(), 'All reactions:')]/following-sibling::span[1]//span[text()]",
-                    "//span[@aria-label='See who reacted to this' and @role='toolbar']/following-sibling::*[1]//span[text()]"
-]
+class Post(Enum):
+    TITLE = "//div[@role='dialog']//h2//span[text()]"
+    REACTIONS =  "//div[@role='dialog']//div[contains(text(), 'All reactions:')]/following-sibling::span[1]//span[text()]"
+    COMMENTS_SHARES = "//div[@role='button']//span[starts-with(@class, 'html-span') and text()]"
+class Video(Enum):
+    TITLE = "//div[@id='watch_feed']//span[text()]"
+    REACTIONS = "//span[@aria-label='See who reacted to this' and @role='toolbar']/following-sibling::*[1]//span[text()]"
+    COMMENTS = "//div[@role='button]//span[contains(text(),'comments')]"
+
   
+def get_num_comments_shares_from_post(driver:webdriver.Chrome)-> Tuple[str,str]:
+    engagements = WebDriverWait(driver, 10).until( EC.presence_of_all_elements_located((By.XPATH, 
+                                                                                        )))
+    comments = engagements[0].text
+    shares = engagements[1].text
+    return comments,shares
            
-def extract_engagements_from_post(driver:webdriver.Chrome, post_type:Enum)->str:
+def extract_num_engagements_from_post(driver:webdriver.Chrome, post_type:Enum)->str:
+    engagements = {}
     # for 
     try:
+        for metric in post_type:
+            if metric.name != post_type.COMMENTS:
+                # gets first presence of element
+                engagement = WebDriverWait(driver, 10).until( EC.presence_of_element_located((By.XPATH, metric.value)))
+                engagements[metric.name] = engagement.text
+            else:
+                # grabs comments and shares at the same time --> only occurs in fb posts DOM
+                comments, shares = get_num_comments_shares_from_post(driver)
+                engagements['COMMENTS'] = comments
+                engagements['SHARES'] = shares
+        print(engagements)
         
-        #reactions = WebDriverWait(driver, 10).until( EC.presence_of_element_located((By.XPATH, reactions_xpath[post_type.value])))
-            # number of comments logo/container may not be expanded
-         # number of shares/comments hidden in pseudo-element (css) sandwhiched between ::before and ::after tags
-             # so doesn't exist in dom, must use javascript to find element
-             # comments is first
-        engagement_elements = driver.execute_script("""
-            let metrics = [];
-            const num_comments_shares = Array.from(document.querySelectorAll('[class^="html-span"]'));
-            num_comments_shares.forEach(metric => {
-                metrics.push(metric.textContent);
-            });
-            return metrics;
-"""
-        )
-        print(engagement_elements)
+
     except Exception as e:
         print("Can't find reaction element!", e)
-
-def get_reactions_from_video(driver:webdriver.Chrome)->str:
-    try:
-        num_reactions = WebDriverWait(driver, 10).until( EC.presence_of_element_located((By.XPATH, "//span[@aria-label='See who reacted to this' and @role='toolbar']/following-sibling::*[1]//span[text()]")))
-        return num_reactions.text
-    except Exception as e:
-        print("Can't find reaction element!", e)
-
-
-def get_shares_from_post(driver:webdriver.Chrome):
-
-    pass
 
 
 if __name__ == '__main__':
     chrome_options = Options()
     driver = webdriver.Chrome(options=chrome_options)
-    driver.get('https://www.facebook.com/corpuschristicronica/posts/pfbid031mgN8ToWXJu73vb4oFAhJoLQR4FgC4EURAKnfxFr7FTHBvdFvZWQHreVvn9TenzNl')
-    print(extract_engagements_from_post(driver, "post"))
+    login_to_facebook(driver)
+    driver.get('https://www.facebook.com/permalink.php?story_fbid=pfbid02sSKEQDhuir19DXixnBJv6XAGfHMfyK89YA5t1GvtWUBo3nUC9USdagW3E9pK2oKGl&id=61553573245040')
+    extract_num_engagements_from_post(driver)
     # Close the browser
     input("finished")
     driver.quit()
