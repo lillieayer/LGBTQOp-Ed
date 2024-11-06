@@ -1,15 +1,13 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
-from dotenv import load_dotenv, dotenv_values 
 from fb_comment_scraper import *
+from file_processors import *
 from typing import Tuple
 from enum import Enum
+import os
 
 # to add abstraction, maps to index of items in reactions_path array
 
@@ -17,26 +15,32 @@ class Post(Enum):
     CONTENT = "//div[@data-ad-preview='message']//div[text()]"
     REACTIONS =  "//div[contains(text(), 'All reactions:')]/following-sibling::span[1]//span[text()]"
     COMMENTS_SHARES = "//div[@role='button']//span[starts-with(@class, 'html-span') and text()]"
+
+# video content doesn't allow shares
 class Video(Enum):
     # content and comments doesn't work
     CONTENT = "//div[@role='banner']/following-sibling::div[1]//div[not(@role='tablist') and not(@role='tab') and not(@role='none')]//span[text()]"
     REACTIONS = "//span[@aria-label='See who reacted to this' and @role='toolbar']/following-sibling::*[1]//span[text()]"
     COMMENTS = "//div[@role='button]//span[contains(text(),'comments')]"
 
-  
+
+''' Purpose: to grab the comments and shares from a post 
+''' 
 def get_num_comments_shares_from_post(driver:webdriver.Chrome)-> Tuple[str,str]:
-    engagements = WebDriverWait(driver, 10).until( EC.presence_of_all_elements_located((By.XPATH, 
-                                                                                        )))
+    # from xpath returns count of comments/shares --> also grabs comments/shares from posts in background/below
+    engagements = WebDriverWait(driver, 10).until( EC.presence_of_all_elements_located((By.XPATH, Post.COMMENTS_SHARES.value)))
     comments = engagements[0].text
     shares = engagements[1].text
     return comments,shares
            
-def extract_num_engagements_from_post(driver:webdriver.Chrome, post_type:Enum, link:str)->str:
+def find_num_engagements_from_post(driver:webdriver.Chrome, link:str,  post_type:Enum,)->str:
     engagements = {'LINK':link}
+    driver.get(link)
     # for 
     try:
         for metric in post_type:
-            if metric.name != post_type.COMMENTS:
+            
+            if metric != Post.COMMENTS_SHARES:
                 # gets first presence of element
                 engagement = WebDriverWait(driver, 10).until( EC.presence_of_element_located((By.XPATH, metric.value)))
                 engagements[metric.name] = engagement.text
@@ -46,22 +50,37 @@ def extract_num_engagements_from_post(driver:webdriver.Chrome, post_type:Enum, l
                 engagements['COMMENTS'] = comments
                 engagements['SHARES'] = shares
         return engagements
-        
-
     except Exception as e:
         print("Can't find reaction element!", e)
 
-def print_dict(d:dict):
-    for key,val in d:
-        print(f"{key} --> {val}")
+def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
+    files = ['lakewood_church_shooter.txt']
+    #for file in os.listdir(dir):
+    for file in files:
+        all_posts_links = extract_links_from_file(dir + '/' + file)
+        narrative_insights = []
+        for post_link in all_posts_links:
+            if ('facebook.com/watch' in post_link) or ('fb.com/watch' in post_link):
+                post_type = Video
+            elif ('facebook.com/reel' in post_link) or ('fb.com/reel' in post_link):
+                post_type = ""
+            else:
+                post_type = Post
+
+            assert post_type is not None, f"Error when analyzing post type in {post_link}"
+            
+            post_insights = find_num_engagements_from_post(driver, post_link, post_type)
+            # add dictionary of each post info to narrative list
+            narrative_insights.append(post_insights)
+        filename = file.split('.')
+        with open('./output/' + filename[0] + '_engagements.json', 'w', encoding='utf-8') as engagement_file:
+            json.dump(narrative_insights, engagement_file, ensure_ascii=False, indent=4)
+
 
 if __name__ == '__main__':
     chrome_options = Options()
     driver = webdriver.Chrome(options=chrome_options)
-    driver.get('https://www.facebook.com/realCharlieKirk/videos/398264105959809/')
-    engagement = WebDriverWait(driver, 10).until( EC.presence_of_element_located((By.XPATH, Video.REACTIONS.value)))
-    print(engagement.text)
-    #extract_num_engagements_from_post(driver,Post)
+    extract_engagements_from_files(driver,'./links')
     # Close the browser
     input("finished")
     driver.quit()

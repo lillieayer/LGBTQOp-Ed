@@ -10,15 +10,25 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from dotenv import load_dotenv, dotenv_values  
 
+
 '''
     This is an improved version of scraper that
     also translates comment to english.
     It also works in alternate facebook format
-    #put in an email and password for a burner account
-    #make a file in the same directory called links.txt and put in a link per line with one empty line at the end 
+
+    Extended by Lillie Ayer: 
+    - added extra protection of credentials 
+    - refactored for readability/reusability
+    - cleaned links as they're read in to get rid of errors
+    - added methods to extract comments in bulk simultaneously:
+       -  from multiple files
+        - from multiple posts 
 
 '''
 
+
+
+# ************* Authentication Methods *****************
 '''Returns tuple of facebook credentials'''
 def load_fb_credentials():
     load_dotenv()
@@ -47,6 +57,8 @@ def login_to_facebook(driver:webdriver.Chrome):
     password_input.send_keys(creds[1])
     password_input.send_keys(Keys.RETURN)
     time.sleep(5)  # Wait for login to complete
+
+# ************* Navigating FB Elements Methods *****************
 
 def click_comment_button(driver:webdriver.Chrome):
     try:
@@ -230,6 +242,7 @@ def load_side_comments(driver: webdriver.Chrome):
             print(f"Error: {e}")
             break
 
+# ************* Storing Comment Data Methods *****************
 
 '''Extracts comments from Web Elements and stores result
     param1: comments --> list obj of WebElements from selenium
@@ -256,9 +269,11 @@ def clean_and_store_comments(comments: list, storage:list):
         if (comment_data['time_posted'] != 'Like'):
             storage.append(comment_data)
 
+# ************* Extracting Comment Data Methods *****************
+
 ''' Returns comments from a FaceBook post as WebElements using selenium
     ** Note: does not store comments in json'''
-def fetch_comments_from_post(link, driver):
+def fetch_comments_from_link(link, driver):
     # test if browser can open link
     comments = []
     try:
@@ -289,10 +304,10 @@ def fetch_comments_from_post(link, driver):
 '''Will get and store all comments into dictionary and return it
     helper function for extracting comments from links in multiple files
     ** Note: does not store comments in json'''
-def fetch_cleaned_comments_from_links(links:list, driver:webdriver.Chrome):
+def fetch_cleaned_comments_from_file(links:list, driver:webdriver.Chrome):
     all_posts_comments = []  # To store all comments from file
     for link in links:
-        post_comments = fetch_comments_from_post(link, driver)  
+        post_comments = fetch_comments_from_link(link, driver)  
         all_posts_comments.append(post_comments)     
 
     return all_posts_comments
@@ -303,10 +318,10 @@ def extract_comments_from_files(files, driver:webdriver.Chrome):
         filepath = './links/' + f
         with open(filepath, 'r') as file:
             # cleans out \n and then empty space in list of links
-            links = [line.strip() for line in file.readlines()]
-            links = [link for link in links if link != '']
+            file_links = [line.strip() for line in file.readlines()]
+            file_links = [link for link in file_links if link != '']
         # get all post comments from all links listed in file
-        all_comments = fetch_cleaned_comments_from_links(links, driver)
+        all_comments = fetch_cleaned_comments_from_file(file_links, driver)
         filename = f.split('.')
         # create a json for each file displaying each link with their respective comments
         with open('./output/' + filename[0] + '_comments.json', 'w', encoding='utf-8') as comment_file:

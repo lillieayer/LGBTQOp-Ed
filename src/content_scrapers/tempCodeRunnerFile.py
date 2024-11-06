@@ -1,1 +1,0 @@
-"//div[contains(text(), 'All reactions:')]/following-sibling::span[2]/descendant::span[1]/descendant::span[1]"
