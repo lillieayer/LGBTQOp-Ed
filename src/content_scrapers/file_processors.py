@@ -1,4 +1,4 @@
-import pandas as pd
+
 
 def extract_links_from_file(filepath:str) ->list[str]:
     with open(filepath, 'r') as file:

@@ -23,6 +23,11 @@ class Video(Enum):
     REACTIONS = "//span[@aria-label='See who reacted to this' and @role='toolbar']/following-sibling::*[1]//span[text()]"
     COMMENTS = "//div[@role='button]//span[contains(text(),'comments')]"
 
+class Reel(Enum):
+    # reactions and comments works
+    REACTIONS = "//div[./div[starts-with(@aria-label, 'Like') and @role='button']]/following-sibling::div[1]//span[text()]"
+    COMMENTS = "//div[./div[starts-with(@aria-label, 'Comment') and @role='button']]/following-sibling::div[1]//span[text()]"
+    SHARES = "(//div[.//div[starts-with(@aria-label, 'Comment') and @role='button']])[1]/following-sibling::div[1]//span[text()]"
 
 ''' Purpose: to grab the comments and shares from a post 
 ''' 
@@ -59,6 +64,7 @@ def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
     for file in files:
         all_posts_links = extract_links_from_file(dir + '/' + file)
         narrative_insights = []
+        
         for post_link in all_posts_links:
             if ('facebook.com/watch' in post_link) or ('fb.com/watch' in post_link):
                 post_type = Video
@@ -73,14 +79,19 @@ def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
             # add dictionary of each post info to narrative list
             narrative_insights.append(post_insights)
         filename = file.split('.')
-        with open('./output/' + filename[0] + '_engagements.json', 'w', encoding='utf-8') as engagement_file:
+        with open('./output/fb' + filename[0] + '_engagements.json', 'w', encoding='utf-8') as engagement_file:
             json.dump(narrative_insights, engagement_file, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
     chrome_options = Options()
     driver = webdriver.Chrome(options=chrome_options)
-    extract_engagements_from_files(driver,'./links')
+    # test reels
+    link = "https://www.facebook.com/reel/2380911872082021"
+    driver.get(link)
+    e = WebDriverWait(driver, 10).until( EC.presence_of_element_located((By.XPATH,Reel.SHARES.value)))
+    print(e.text)
+    #extract_engagements_from_files(driver, './links')
     # Close the browser
     input("finished")
     driver.quit()
