@@ -33,27 +33,30 @@ class Reel(Enum):
     COMMENTS = "//div[./div[starts-with(@aria-label, 'Comment') and @role='button']]/following-sibling::div[1]//span[text()]"
     SHARES = "//div[./div[starts-with(@aria-label, 'Share') and @role='button']]/following-sibling::div[1]//span[text()]"
 
-def clean_metric(count_label:str)->int:
-    count = None
+def clean_metric(count_label:str)->float:
+    count = count_label
     if 'K' in count_label:
         i = count_label.index('K')
-        count = int(count_label[:i])
+        count = count_label[0:i]
+        count = float(count)
         count *= 1000
     else:
         if " " in count_label:
             count = count_label.split(' ')[0]
-        count = int(count)
+        count = float(count)
     return count
    
 
 ''' Purpose: to grab the comments and shares from a post 
 ''' 
-def get_num_comments_shares_from_post(driver:webdriver.Chrome)-> Tuple[int,int]:
+def get_num_comments_shares_from_post(driver:webdriver.Chrome)-> Tuple[float,float]:
     # from xpath returns count of comments/shares --> also grabs comments/shares from posts in background/below
     engagements = WebDriverWait(driver, 10).until( EC.presence_of_all_elements_located((By.XPATH, Post.COMMENTS_SHARES.value)))
     comments = engagements[0].text
     shares = engagements[1].text
-    return int(comments),int(shares)
+    count_comments = clean_metric(comments)
+    count_shares = clean_metric(shares)
+    return count_comments,count_shares
            
 def find_num_engagements_from_post(driver:webdriver.Chrome, link:str,  post_type:Enum,)->dict:
     engagements = {'LINK':link}
@@ -65,7 +68,10 @@ def find_num_engagements_from_post(driver:webdriver.Chrome, link:str,  post_type
                 # gets first presence of element
                 engagement = WebDriverWait(driver, 10).until( EC.presence_of_element_located((By.XPATH, metric.value)))
                     # clean engagement count
-                engagements[metric.name] = engagement.text
+                count = engagement.text
+                if metric.name != "CONTENT":
+                    count = clean_metric(count)
+                engagements[metric.name] = count
             except Exception as e:
                 print("Exception caught as", e)
             finally:
