@@ -62,7 +62,10 @@ def find_num_engagements_from_post(driver:webdriver.Chrome, link:str,  post_type
                 # gets first presence of element
                 engagement = WebDriverWait(driver, 10).until( EC.presence_of_element_located((By.XPATH, metric.value)))
                 # clean engagement count
-                count = clean_metric(engagement.text)
+                if metric.name != 'CONTENT':
+                    count = clean_metric(engagement.text)
+                else:
+                    count = engagement.text
                 engagements[metric.name] = count
 
             else:
@@ -75,9 +78,7 @@ def find_num_engagements_from_post(driver:webdriver.Chrome, link:str,  post_type
         print("Can't find reaction element!", e)
 
 def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
-    files = ['lakewood_church_shooter.txt']
-    #for file in os.listdir(dir):
-    for file in files:
+    for file in os.listdir(dir):
         all_posts_links = extract_links_from_file(dir + '/' + file)
         narrative_insights = []
         
@@ -85,7 +86,7 @@ def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
             if ('facebook.com/watch' in post_link) or ('fb.com/watch' in post_link):
                 post_type = Video
             elif ('facebook.com/reel' in post_link) or ('fb.com/reel' in post_link):
-                post_type = ""
+                post_type = Reel
             else:
                 post_type = Post
 
@@ -95,19 +96,13 @@ def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
             # add dictionary of each post info to narrative list
             narrative_insights.append(post_insights)
         filename = file.split('.')
-        with open('./output/fb' + filename[0] + '_engagements.json', 'w', encoding='utf-8') as engagement_file:
+        with open('./output/fb/' + filename[0] + '_engagements.json', 'w', encoding='utf-8') as engagement_file:
             json.dump(narrative_insights, engagement_file, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
     chrome_options = Options()
     driver = webdriver.Chrome(options=chrome_options)
-    # test reels
-    link = "https://www.facebook.com/GlennBeck/videos/585451153568998/"
-    driver.get(link)
-    e = WebDriverWait(driver, 10).until( EC.presence_of_element_located((By.XPATH,Video.COMMENTS.value)))
-    print(e.text)
-    #extract_engagements_from_files(driver, './links')
-    # Close the browser
+    extract_engagements_from_files(driver, './links')
     input("finished")
     driver.quit()
