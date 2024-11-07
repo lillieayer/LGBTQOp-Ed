@@ -13,14 +13,17 @@ import os
 Note: for this engagement scraper you do not need to be logged in!
 It's actually essential that you are not so that way the scraper doesn't
 detect any posts in the background from the account'''
-# to add abstraction, maps to index of items in reactions_path array
+
+
+
+# Enums define the XPaths to find certain insights/info about a FB media type
 
 class Post(Enum):
     CONTENT = "//div[@data-ad-preview='message']//div[text()]"
     REACTIONS =  "//div[contains(text(), 'All reactions:')]/following-sibling::span[1]//span[text()]"
     COMMENTS_SHARES = "//div[@role='button']//span[starts-with(@class, 'html-span') and text()]"
 
-# video content doesn't allow shares
+# video content doesn't allow public share metrics
 class Video(Enum):
     # content doesn't work
    # CONTENT = "//div[@role='banner']/following-sibling::div[1]//div[not(@role='tablist') and not(@role='tab') and not(@role='none')]//span[text()]"
@@ -28,7 +31,6 @@ class Video(Enum):
     COMMENTS = "//div[./span[@aria-label='See who reacted to this' and @role='toolbar']]/following-sibling::div[2]//span[text()]"
 
 class Reel(Enum):
-    # reactions and comments works
     REACTIONS = "//div[./div[starts-with(@aria-label, 'Like') and @role='button']]/following-sibling::div[1]//span[text()]"
     COMMENTS = "//div[./div[starts-with(@aria-label, 'Comment') and @role='button']]/following-sibling::div[1]//span[text()]"
     SHARES = "//div[./div[starts-with(@aria-label, 'Share') and @role='button']]/following-sibling::div[1]//span[text()]"
