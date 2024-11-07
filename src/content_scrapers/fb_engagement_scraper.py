@@ -9,6 +9,10 @@ from typing import Tuple
 from enum import Enum
 import os
 
+'''
+Note: for this engagement scraper you do not need to be logged in!
+It's actually essential that you are not so that way the scraper doesn't
+detect any posts in the background from the account'''
 # to add abstraction, maps to index of items in reactions_path array
 
 class Post(Enum):
@@ -51,31 +55,29 @@ def get_num_comments_shares_from_post(driver:webdriver.Chrome)-> Tuple[int,int]:
     shares = engagements[1].text
     return int(comments),int(shares)
            
-def find_num_engagements_from_post(driver:webdriver.Chrome, link:str,  post_type:Enum,)->str:
+def find_num_engagements_from_post(driver:webdriver.Chrome, link:str,  post_type:Enum,)->dict:
     engagements = {'LINK':link}
     driver.get(link)
     # for 
-    try:
-        for metric in post_type:
-            
-            if metric != Post.COMMENTS_SHARES:
+    for metric in post_type:   
+        if metric != Post.COMMENTS_SHARES:
+            try:
                 # gets first presence of element
                 engagement = WebDriverWait(driver, 10).until( EC.presence_of_element_located((By.XPATH, metric.value)))
-                # clean engagement count
-                if metric.name != 'CONTENT':
-                    count = clean_metric(engagement.text)
-                else:
-                    count = engagement.text
-                engagements[metric.name] = count
+                    # clean engagement count
+                engagements[metric.name] = engagement.text
+            except Exception as e:
+                print("Exception caught as", e)
+            finally:
+                # find next element
+                continue
 
-            else:
+        else:
                 # grabs comments and shares at the same time --> only occurs in fb posts DOM
-                comments, shares = get_num_comments_shares_from_post(driver)
-                engagements['COMMENTS'] = comments
-                engagements['SHARES'] = shares
-        return engagements
-    except Exception as e:
-        print("Can't find reaction element!", e)
+            comments, shares = get_num_comments_shares_from_post(driver)
+            engagements['COMMENTS'] = comments
+            engagements['SHARES'] = shares
+    return engagements
 
 def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
     for file in os.listdir(dir):
@@ -83,9 +85,9 @@ def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
         narrative_insights = []
         
         for post_link in all_posts_links:
-            if ('facebook.com/watch' in post_link) or ('fb.com/watch' in post_link):
+            if ('facebook.com/watch' in post_link) or ('fb.watch' in post_link):
                 post_type = Video
-            elif ('facebook.com/reel' in post_link) or ('fb.com/reel' in post_link):
+            elif ('facebook.com/reel' in post_link) or ('fb.reel' in post_link):
                 post_type = Reel
             else:
                 post_type = Post
