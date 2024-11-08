@@ -16,18 +16,14 @@ detect any posts in the background from the account'''
 
 
 
-# Enums define the XPaths to find certain insights/info about a FB media type
+# Enums define the XPaths to find certain insights/info about a social media type
 class Tweet(Enum):
-    CONTENT = "//article[@data-testid='tweet']//div[@data-testid='tweetedText']//span[text()]"
+    CONTENT = "//article//div[@data-testid='tweetText']//span[text()]"
     AUTHOR = "//div[@data-testid='User-Name']//a[@role='link']//span[text()]"
-    REACTIONS = "//button[@data-testid='like' and role='button']//span[text()]"
-    COMMENTS = "//button[@data-testid='reply' and role='button']//span[text()]"
-    SHARES = "//button[@data-testid='retweet' and role='button']//span[text()]"
-
+    RETWEETS_QUOTES_LIKES = "//div[@role='group']//a//span[text()]"
 
 class FBPost(Enum):
     AUTHOR = "//div[@data-ad-rendering-role='profile_name']//h2//a[@role='link']//strong/span[text()]"
-    DATE = 
     CONTENT = "//div[@data-ad-preview='message']//div[text()]"
     REACTIONS =  "//div[contains(text(), 'All reactions:')]/following-sibling::span[1]//span[text()]"
     COMMENTS_SHARES = "//div[@role='button']//span[starts-with(@class, 'html-span') and text()]"
@@ -52,54 +48,80 @@ def clean_metric(count_label:str)->float:
         count = float(count)
         count *= 1000
     else:
-        if " " in count_label:
+        if " " in count:
             count = count_label.split(' ')[0]
+        if ',' in count:
+            count = count.replace(',','')
         count = float(count)
     return count
    
+def get_num_engagements_from_tweet(driver:webdriver.Chrome)->Tuple[float, float, float]:
+    
+    engagements = WebDriverWait(driver, 10).until( EC.presence_of_all_elements_located((By.XPATH, Tweet.RETWEETS_QUOTES_LIKES.value)))
+    r = clean_metric(engagements[0].text)
+    q = clean_metric(engagements[2].text)
+    l = clean_metric(engagements[4].text)
+    return r, q, l
 
-''' Purpose: to grab the comments and shares from a post 
+
+''' Purpose: to grab the comments and shares from a fb post 
 ''' 
-def get_num_comments_shares_from_post(driver:webdriver.Chrome)-> Tuple[float,float]:
+def get_num_comments_shares_from_fb_post(driver:webdriver.Chrome)-> Tuple[float,float]:
     # from xpath returns count of comments/shares --> also grabs comments/shares from posts in background/below
-    engagements = WebDriverWait(driver, 10).until( EC.presence_of_all_elements_located((By.XPATH, Post.COMMENTS_SHARES.value)))
+    engagements = WebDriverWait(driver, 10).until( EC.presence_of_all_elements_located((By.XPATH, FBPost.COMMENTS_SHARES.value)))
     comments = engagements[0].text
     shares = engagements[1].text
     count_comments = clean_metric(comments)
     count_shares = clean_metric(shares)
     return count_comments,count_shares
            
-def find_num_engagements_from_link(driver:webdriver.Chrome, link:str,  post_type:Enum,)->dict:
+def find_num_engagements_from_link(driver:webdriver.Chrome, link:str,  post_type:Enum, failures:dict[str, list[str]])->dict:
     engagements = {'LINK':link}
     driver.get(link)
     # for 
-    for metric in post_type:   
-        if metric != FBPost.COMMENTS_SHARES:
-            try:
-                # gets first presence of element
+    for metric in post_type:
+        try: 
+            if metric == Tweet.RETWEETS_QUOTES_LIKES:
+                retweets, quotes, likes = get_num_engagements_from_tweet(driver)
+                engagements['RETWEETS'] = retweets
+                engagements['QUOTES'] = quotes
+                engagements['LIKES'] = likes
+    
+            elif metric != FBPost.COMMENTS_SHARES:
+                    # gets first presence of element
                 engagement = WebDriverWait(driver, 10).until( EC.presence_of_element_located((By.XPATH, metric.value)))
-                    # clean engagement count
+                        # clean engagement count
                 count = engagement.text
-                if metric.name != "CONTENT":
+                if (metric.name != "CONTENT") and (metric.name != "AUTHOR"):
                     count = clean_metric(count)
                 engagements[metric.name] = count
-            except Exception as e:
-                print("Exception caught as", e)
-            finally:
-                # find next element
-                continue
+            else:
+                    # grabs comments and shares at the same time --> only occurs in fb posts DOM
+                comments, shares = get_num_comments_shares_from_fb_post(driver)
+                engagements['COMMENTS'] = comments
+                engagements['SHARES'] = shares
+        except Exception as e:
+            # notify console of failure
+            print(f"** Scraping failure for: {link} **")
+            print(f"{metric.name} failed to be scraped.")
+            ## debug recording failures
+            if link in failures: 
+                failures[link].append(metric.name)
+            else:
+                failures[link] = [metric.name]
+            # find next metric
+            continue
 
-        else:
-                # grabs comments and shares at the same time --> only occurs in fb posts DOM
-            comments, shares = get_num_comments_shares_from_post(driver)
-            engagements['COMMENTS'] = comments
-            engagements['SHARES'] = shares
+            
     return engagements
 
 def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
+    all_failed_links = []
     for file in os.listdir(dir):
         all_posts_links = extract_links_from_file(dir + '/' + file)
         narrative_insights = []
+        # records failed links per narrative
+        failed_links = {}
         if 'twitter' in dir:
             post_type = Tweet
             folder = 'twitter'
@@ -109,7 +131,7 @@ def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
         for post_link in all_posts_links:
             # if analyzing fb links must check each for media type
             if folder == 'fb':
-                if ('facebook.com/watch' in post_link) or ('fb.watch' in post_link):
+                if ('facebook.com/watch' in post_link) or ('fb.watch' in post_link) or ('/videos/' in post_link):
                     post_type = FBVideo
                 elif ('facebook.com/reel' in post_link) or ('fb.reel' in post_link):
                     post_type = FBReel
@@ -117,19 +139,21 @@ def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
                     post_type = FBPost
 
             assert post_type is not None, f"Error when analyzing post type in {post_link}"
-            
-            post_insights = find_num_engagements_from_link(driver, post_link, post_type)
+            post_insights = find_num_engagements_from_link(driver, post_link, post_type, failed_links)
             # add dictionary of each post info to narrative list
             narrative_insights.append(post_insights)
+            # record narratives failed links
+            all_failed_links.append(failed_links)
         filename = file.split('.')
-        with open('./output/high_volume' + folder + '/' + filename[0] + '_engagements.json', 'w', encoding='utf-8') as engagement_file:
+        with open('./output/high_volume/' + folder + '/' + filename[0] + '_engagements.json', 'w', encoding='utf-8') as engagement_file:
             json.dump(narrative_insights, engagement_file, ensure_ascii=False, indent=4)
+    with open('./output/high_volume/' + folder + '/' + 'failed_links.json', 'w', encoding='utf-8') as failed_links_file:
+            json.dump(all_failed_links, failed_links_file, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
     chrome_options = Options()
     driver = webdriver.Chrome(options=chrome_options)
-    extract_engagements_from_files(driver, './links/fb/')
-    extract_engagements_from_files(driver, './links/twitter/')
+    extract_engagements_from_files(driver, "./links/fb/")
     input("finished")
     driver.quit()
