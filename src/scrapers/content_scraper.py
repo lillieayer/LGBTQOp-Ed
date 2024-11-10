@@ -12,6 +12,7 @@ import os,json
 *** ContentScraperInterface: ***
 
 A superclass that defines and partially implements methods for ContentScraper objects:
+current subclasses: TwitterScraper, FBScraper and FBCommentScraper
 
 ** Purpose: Defines base methods/qualities for web scrapers for various platforms
 that can derive certain web content from social media posts using Selenium library. 
