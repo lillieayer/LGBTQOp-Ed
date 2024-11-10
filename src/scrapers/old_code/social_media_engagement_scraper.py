@@ -3,8 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from fb_comment_scraper import *
-from scrapers.old_code.file_processors import *
+from file_processors import *
 from typing import Tuple
 from enum import Enum
 import os,json
@@ -143,7 +142,7 @@ def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
             # add dictionary of each post info to narrative list
             narrative_insights.append(post_insights)
             # record narratives failed links
-            all_failed_links.append(failed_links)
+        all_failed_links.append(failed_links)
         filename = file.split('.')
         with open('./output/high_volume/' + folder + '/' + filename[0] + '_engagements.json', 'w', encoding='utf-8') as engagement_file:
             json.dump(narrative_insights, engagement_file, ensure_ascii=False, indent=4)
@@ -154,6 +153,6 @@ def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
 if __name__ == '__main__':
     chrome_options = Options()
     driver = webdriver.Chrome(options=chrome_options)
-    extract_engagements_from_files(driver, "./links/fb/")
+    extract_engagements_from_files(driver, "./links/twitter/")
     input("finished")
     driver.quit()
