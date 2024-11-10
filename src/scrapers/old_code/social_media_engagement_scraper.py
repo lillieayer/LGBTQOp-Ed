@@ -4,10 +4,10 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from fb_comment_scraper import *
-from file_processors import *
+from scrapers.old_code.file_processors import *
 from typing import Tuple
 from enum import Enum
-import os
+import os,json, 
 
 '''
 Note: for this engagement scraper you do not need to be logged in!
@@ -58,10 +58,10 @@ def clean_metric(count_label:str)->float:
 def get_num_engagements_from_tweet(driver:webdriver.Chrome)->Tuple[float, float, float]:
     
     engagements = WebDriverWait(driver, 10).until( EC.presence_of_all_elements_located((By.XPATH, Tweet.RETWEETS_QUOTES_LIKES.value)))
-    r = clean_metric(engagements[0].text)
-    q = clean_metric(engagements[2].text)
-    l = clean_metric(engagements[4].text)
-    return r, q, l
+    retweets = clean_metric(engagements[0].text)
+    quotes = clean_metric(engagements[2].text)
+    likes = clean_metric(engagements[4].text)
+    return retweets, quotes, likes
 
 
 ''' Purpose: to grab the comments and shares from a fb post 

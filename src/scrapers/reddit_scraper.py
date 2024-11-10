@@ -4,9 +4,12 @@ from dotenv import load_dotenv, dotenv_values
 
 # global to unlock PRAW API
 config = dotenv_values(".env") 
+
+
 ''' Class: wrapper for praw library meant to customize reddit scraper
 to contain keyword, subreddit, and then write to files 
     Purpose: scrapes reddit content in a specific subreddit'''
+
 class RedditScraper:
     def __init__(self, reddit, query, subreddit=None):
         # initialize scraper
@@ -14,11 +17,6 @@ class RedditScraper:
         self.keywords = query
         self.sub = subreddit
         self.posts = []
-
-    '''Reddit front are posts that have the most upvotes within a period of time, older content is at the bottom'''
-    def search_all_reddit_by_keywords(self, keywords, limit=100):
-        for submission in self.scraper.front.hot(limit=limit):
-            pass
 
 # refine to prioritize posts with max amount of keywords
     def search_subreddit_by_keywords(self, limit=100):
