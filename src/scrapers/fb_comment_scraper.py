@@ -14,14 +14,16 @@ from fb_scraper import *
     This is an improved version of scraper that
     also translates comment to english.
     It also works in alternate facebook format
+    @og_author: disinfolab technical analysts
 
-    Extended by Lillie Ayer: 
-    - added extra protection of credentials 
+    Extended/Refactored by Lillie Ayer: 
+    - added extra protection of credentials using environment variables
     - refactored for readability/reusability
     - cleaned links as they're read in to get rid of errors
     - added methods to extract comments in bulk simultaneously:
        -  from multiple files
         - from multiple posts 
+ - restructured code to be object oriented and to extend the superclass ContentScraperInterface class by Lillie Ayer
 
 '''
 

@@ -7,8 +7,11 @@ config = dotenv_values(".env")
 
 
 ''' Class: wrapper for praw library meant to customize reddit scraper
-to contain keyword, subreddit, and then write to files 
+    to contain keyword, subreddit, and then write to files 
     Purpose: scrapes reddit content in a specific subreddit'''
+
+'''Note: Class is separate from ContentScraperInterface since it uses an offical Reddit API
+    @author: Lillie Ayer'''
 
 class RedditScraper:
     def __init__(self, reddit, query, subreddit=None):

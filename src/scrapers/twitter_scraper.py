@@ -5,6 +5,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from content_scraper import * 
 
+'''
+    *** Subclass TwitterScraper ***
+    @author: Lillie Ayer
+    
+    ** Purpose: implements ContentScraperInterface with supporting implementations for scraping tweets on twitter
+
+'''
+
 class TwitterScraper(ContentScraperInterface):
     # Enums define the XPaths to find certain insights/info about a tweet
     class Tweet(Enum):

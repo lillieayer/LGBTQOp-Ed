@@ -7,7 +7,7 @@ from fb_comment_scraper import *
 from scrapers.old_code.file_processors import *
 from typing import Tuple
 from enum import Enum
-import os,json, 
+import os,json
 
 '''
 Note: for this engagement scraper you do not need to be logged in!

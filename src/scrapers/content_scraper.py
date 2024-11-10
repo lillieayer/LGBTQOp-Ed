@@ -11,19 +11,23 @@ import os,json
 '''
 *** ContentScraperInterface: ***
 
-An superclass that defines and partially implements methods for subclasses of ContentScraper:
+A superclass that defines and partially implements methods for ContentScraper objects:
 
-** Purpose: Defines methods/qualities for web scrapers for various platforms
-that can derive the likes/shares/comments from social media content. 
+** Purpose: Defines base methods/qualities for web scrapers for various platforms
+that can derive certain web content from social media posts using Selenium library. 
 
 
 ** Parameters: 
 
 Can scrape web content for the various inputs:
--  given a social media link
+- given a social media link
 - given a file of social media links
 - given a folder with several files of social media links
 
+** Returns:
+1.  dictionary of scraped content from a given link
+2.  json files for organizing scraped content from a given file of links
+    - organizes json files into a specified output folder given each file of links 
 '''
 
 class ContentScraperInterface(ABC):

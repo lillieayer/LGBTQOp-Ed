@@ -7,8 +7,10 @@ from typing import Tuple
 from enum import Enum
 from content_scraper import *
 
+
 '''
 *** Subclass FBScraper ***
+@author: Lillie Ayer
 
 ** Purpose:
 implements ContentScraperInterface with supporting implementations for scraping various post types on faceook'''
