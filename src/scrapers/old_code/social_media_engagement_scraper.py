@@ -20,6 +20,7 @@ class Tweet(Enum):
     CONTENT = "//article//div[@data-testid='tweetText']//span[text()]"
     AUTHOR = "//div[@data-testid='User-Name']//a[@role='link']//span[text()]"
     RETWEETS_QUOTES_LIKES = "//div[@role='group']//a//span[text()]"
+    DATE = "//a[@role='link']//time"
 
 class FBPost(Enum):
     AUTHOR = "//div[@data-ad-rendering-role='profile_name']//h2//a[@role='link']//strong/span[text()]"
@@ -91,7 +92,7 @@ def find_num_engagements_from_link(driver:webdriver.Chrome, link:str,  post_type
                 engagement = WebDriverWait(driver, 10).until( EC.presence_of_element_located((By.XPATH, metric.value)))
                         # clean engagement count
                 count = engagement.text
-                if (metric.name != "CONTENT") and (metric.name != "AUTHOR"):
+                if (metric.name != "CONTENT") and (metric.name != "AUTHOR") and (metric.name != 'DATE'):
                     count = clean_metric(count)
                 engagements[metric.name] = count
             else:
