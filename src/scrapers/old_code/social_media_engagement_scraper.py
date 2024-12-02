@@ -122,15 +122,12 @@ def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
         narrative_insights = []
         # records failed links per narrative
         failed_links = {}
-        if 'twitter' in dir:
+        if "twitter" in file:
             post_type = Tweet
-            folder = 'twitter'
-        else:
-            folder = 'fb'
         
         for post_link in all_posts_links:
             # if analyzing fb links must check each for media type
-            if folder == 'fb':
+            if 'fb' in file:
                 if ('facebook.com/watch' in post_link) or ('fb.watch' in post_link) or ('/videos/' in post_link):
                     post_type = FBVideo
                 elif ('facebook.com/reel' in post_link) or ('fb.reel' in post_link):
@@ -145,15 +142,15 @@ def extract_engagements_from_files(driver:webdriver.Chrome, dir:str):
             # record narratives failed links
         all_failed_links.append(failed_links)
         filename = file.split('.')
-        with open('./output/high_volume/' + folder + '/' + filename[0] + '_engagements.json', 'w', encoding='utf-8') as engagement_file:
+        with open('./output/control/' + filename[0] + '_engagements.json', 'w', encoding='utf-8') as engagement_file:
             json.dump(narrative_insights, engagement_file, ensure_ascii=False, indent=4)
-    with open('./output/high_volume/' + folder + '/' + 'failed_links.json', 'w', encoding='utf-8') as failed_links_file:
+    with open('./output/control/' + 'failed_links.json', 'w', encoding='utf-8') as failed_links_file:
             json.dump(all_failed_links, failed_links_file, ensure_ascii=False, indent=4)
 
 
 if __name__ == '__main__':
     chrome_options = Options()
     driver = webdriver.Chrome(options=chrome_options)
-    extract_engagements_from_files(driver, "./links/twitter/")
+    extract_engagements_from_files(driver, "./links/control/")
     input("finished")
     driver.quit()
