@@ -1,11 +1,11 @@
-from abc import ABC, abstractmethod
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from typing import Tuple
-from enum import Enum
+from abc import ABC
+#from selenium import webdriver
+#from selenium.webdriver.common.by import By
+#from selenium.webdriver.chrome.options import Options
+#from selenium.webdriver.support.ui import WebDriverWait
+#from selenium.webdriver.support import expected_conditions as EC
+#from typing import Tuple
+#from enum import Enum
 import os,json
 
 '''
@@ -67,9 +67,9 @@ class ContentScraperInterface(ABC):
         return content
 
    
-    def extract_content_from_files(self, output_folderpath, content_name)->dict:
-        for file in os.listdir(dir):
-            all_posts_links = self.extract_links_from_file(dir + '/' + file)
+    def extract_content_from_files(self, input_dir, output_folderpath, content_name)->dict:
+        for file in os.listdir(input_dir):
+            all_posts_links = self.extract_links_from_file(input_dir + '/' + file)
             file_insights = []
             
             for post_link in all_posts_links:
