@@ -2,6 +2,9 @@ import pandas as pd
 import json
 import os
 
+def process_all_json(input_dir, output_dir):
+    pass
+
 
 
 if __name__ == "__main__":

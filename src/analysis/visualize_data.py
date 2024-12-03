@@ -1,4 +1,3 @@
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -167,11 +166,6 @@ print(lakewood_start_fb.min())
 print(lakewood_start_twitter.min())
 lakewood_start_time = pd.to_datetime('2024-02-12 10:44PM')
 
-import matplotlib.pyplot as plt
-import numpy as np
-import seaborn as sns
-from google.colab import drive
-drive.mount('/content/drive')
 
 # combine all dataframes
 
@@ -362,7 +356,6 @@ plt.legend()
 plt.savefig('drive/MyDrive/DisinfoGraphs/all_rapid_scatter_chart.jpeg', format='jpeg', bbox_inches='tight', pad_inches=0.2)
 plt.show()
 
-import seaborn as sns
 
 lakewood_monthly = lakewood_df['DATE'].dt.strftime("%B %Y")
 target_monthly = target_df['DATE'].dt.strftime("%B %Y")
