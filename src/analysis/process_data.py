@@ -1,24 +1,22 @@
 import pandas as pd
-import json
 import os
 
-def process_all_json(input_dir, output_dir):
-    pass
+'''
+Specialized for specifying narrative data and combining into one dataframe per social platform'''
 
-
-
-if __name__ == "__main__":
-    dir =  './output/high_volume/fb/'
-    # make a df for the platform
-    narrative_df = []
+def combine_dir_files_as_df(dir):
+    all_files_df = []
     for file in os.listdir(dir):
        
-        data_df = pd.read_json(dir+file)
+        file_df = pd.read_json(dir+file)
         filename = file.split('.')[0]
-        data_df['NARRATIVE'] = filename
-        narrative_df.append(data_df)
+        # specify narrative from file its taken from
+        file_df['NARRATIVE'] = filename
+        all_files_df.append(file_df)
     
-    platform_df = pd.concat(narrative_df, ignore_index=True)
-    platform_df.to_csv(dir+'fb_engagements.csv', index=False)
+    all_files_df = pd.concat(all_files_df, ignore_index=True)
+    return all_files_df
+
+ 
 
 

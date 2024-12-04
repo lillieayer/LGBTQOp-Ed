@@ -2,43 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-
-
-twitter_df = pd.read_csv('./output/twitter/twitter_engagements.csv')
-fb_df = pd.read_csv('./output/fb/fb_engagements.csv')
-fbcontrol_df = pd.read_csv('./output/control/fb_control_engagements.csv')
-tcontrol_df = pd.read_csv('./output/control/twitter_control_engagements.csv')
-
-# clean fb dataset entries
-fb_df.drop([1,3], inplace=True)
-fb_df.drop([5], inplace=True)
-fb_df.drop([7], inplace=True)
-
-fbcontrol_df.loc[fbcontrol_df['LINK'] == "https://www.facebook.com/ToddStarnesFNC/posts/pfbid036d1sYedZqHYMA4rFdjy9tU49KMbL5xTtk7ta5e2thfSqyTQ8gPxFJwYa2Gh9MLujl", 'REACTIONS'] = 97
-fbcontrol_df.loc[fbcontrol_df['LINK'] == "https://www.facebook.com/ToddStarnesFNC/posts/pfbid036d1sYedZqHYMA4rFdjy9tU49KMbL5xTtk7ta5e2thfSqyTQ8gPxFJwYa2Gh9MLujl", 'COMMENTS'] = 30
-fbcontrol_df.loc[fbcontrol_df['LINK'] == "https://www.facebook.com/ToddStarnesFNC/posts/pfbid036d1sYedZqHYMA4rFdjy9tU49KMbL5xTtk7ta5e2thfSqyTQ8gPxFJwYa2Gh9MLujl", 'SHARES'] = 3
-fbcontrol_df['NARRATIVE'] = "Control Group"
-tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/SaraGonzalesTX/status/1856860763173814286", 'RETWEETS'] = 30
-tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/SaraGonzalesTX/status/1856860763173814286", 'LIKES'] = 353
-
-tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/ClayTravis/status/1856857613243179221", 'RETWEETS'] = 7
-tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/ClayTravis/status/1856857613243179221", 'LIKES'] = 119
-
-
-tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/scarlett4kids/status/1858027540830412826", 'RETWEETS'] = 4
-tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/scarlett4kids/status/1858027540830412826", 'LIKES'] = 15
-
-
-tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/scarlett4kids/status/1857101714995753406", 'RETWEETS'] = 6
-tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/scarlett4kids/status/1857101714995753406", 'LIKES'] = 47
-tcontrol_df['NARRATIVE'] = "Control Group"
-
-fb_df.dropna(inplace=True)
-
-new_row1 = pd.DataFrame({'LINK': ["https://www.facebook.com/TheFederalistPapers/posts/pfbid02BXpsVYtSTsWJWCXCC8qvZLTygXbGxrLcGjALKhKdf4LoGyZVCYX4quXZo31NWJU3l"], 'REACTIONS': [4900], "COMMENTS":[1300] , "SHARES":[2600], 'CONTENT':[''], 'AUTHOR':[''], 'NARRATIVE':["Children's tuck-friendly bathing suits at Target"] })
-new_row = pd.DataFrame({'LINK': ["https://www.facebook.com/ToddStarnesFNC/posts/pfbid0ZZhDixJQuaFoB8VLNYXuJrgd1oKnxuBvYLmMR5YeoD4CdxYxpu5cedAvTcwgWXFAl"], 'AUTHOR': ["Todd Starnes"], 'CONTENT': ["Tim Walz signed a law putting tampons in boys' bathrooms in taxpayer-funded schools. "], 'REACTIONS':[445.0], 'COMMENTS':[262.0], 'SHARES':[287.0], 'NARRATIVE':"Tim Walz mandated tampons in boys' bathrooms"})
-fb_df = pd.concat([fb_df, new_row], ignore_index=True)
-fb_df = pd.concat([fb_df,new_row1], ignore_index=True)
+from process_data import *
 
 narrative_labels = {
     'tampons': "Tim Walz mandated tampons in boys' bathrooms",
@@ -47,12 +11,50 @@ narrative_labels = {
 
 }
 
-fb_df.loc[fb_df['NARRATIVE'] == "walz_tampons_engagements", 'NARRATIVE'] = "Tim Walz mandated tampons in boys' bathrooms"
-fb_df.loc[fb_df['NARRATIVE'] == "lakewood_shooter_engagements", 'NARRATIVE'] = "Lakewood Church shooter identified as transgender"
-fb_df.loc[fb_df['NARRATIVE'] == "target_suits_engagements", 'NARRATIVE'] = "Children's tuck-friendly bathing suits at Target"
-twitter_df.loc[twitter_df['NARRATIVE'] == "target_suits_engagements", 'NARRATIVE'] = "Children's tuck-friendly bathing suits at Target"
-twitter_df.loc[twitter_df['NARRATIVE'] == "lakewood_shooter_engagements", 'NARRATIVE'] = "Lakewood Church shooter identified as transgender"
-twitter_df.loc[twitter_df['NARRATIVE'] == "walz_tampons_engagements", 'NARRATIVE'] = "Tim Walz mandated tampons in boys' bathrooms"
+twitter_df = combine_dir_files_as_df('./output/twitter')
+fb_df = combine_dir_files_as_df('./output/fb')
+fbcontrol_df = pd.read_json('./output/control/fb_control_engagements.json')
+tcontrol_df = pd.read_csv('./output/control/twitter_control_engagements.json')
+
+def clean_control_data():
+  fbcontrol_df.loc[fbcontrol_df['LINK'] == "https://www.facebook.com/ToddStarnesFNC/posts/pfbid036d1sYedZqHYMA4rFdjy9tU49KMbL5xTtk7ta5e2thfSqyTQ8gPxFJwYa2Gh9MLujl", 'REACTIONS'] = 97
+  fbcontrol_df.loc[fbcontrol_df['LINK'] == "https://www.facebook.com/ToddStarnesFNC/posts/pfbid036d1sYedZqHYMA4rFdjy9tU49KMbL5xTtk7ta5e2thfSqyTQ8gPxFJwYa2Gh9MLujl", 'COMMENTS'] = 30
+  fbcontrol_df.loc[fbcontrol_df['LINK'] == "https://www.facebook.com/ToddStarnesFNC/posts/pfbid036d1sYedZqHYMA4rFdjy9tU49KMbL5xTtk7ta5e2thfSqyTQ8gPxFJwYa2Gh9MLujl", 'SHARES'] = 3
+  fbcontrol_df['NARRATIVE'] = "Control Group"
+  tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/SaraGonzalesTX/status/1856860763173814286", 'RETWEETS'] = 30
+  tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/SaraGonzalesTX/status/1856860763173814286", 'LIKES'] = 353
+
+  tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/ClayTravis/status/1856857613243179221", 'RETWEETS'] = 7
+  tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/ClayTravis/status/1856857613243179221", 'LIKES'] = 119
+
+
+  tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/scarlett4kids/status/1858027540830412826", 'RETWEETS'] = 4
+  tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/scarlett4kids/status/1858027540830412826", 'LIKES'] = 15
+
+
+  tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/scarlett4kids/status/1857101714995753406", 'RETWEETS'] = 6
+  tcontrol_df.loc[tcontrol_df['LINK'] == "https://x.com/scarlett4kids/status/1857101714995753406", 'LIKES'] = 47
+  tcontrol_df['NARRATIVE'] = "Control Group"
+
+def clean_fb_data():
+  # clean fb dataset entries
+  fb_df.drop([1,3], inplace=True)
+  fb_df.drop([5], inplace=True)
+  fb_df.drop([7], inplace=True)
+  new_row1 = pd.DataFrame({'LINK': ["https://www.facebook.com/TheFederalistPapers/posts/pfbid02BXpsVYtSTsWJWCXCC8qvZLTygXbGxrLcGjALKhKdf4LoGyZVCYX4quXZo31NWJU3l"], 'REACTIONS': [4900], "COMMENTS":[1300] , "SHARES":[2600], 'CONTENT':[''], 'AUTHOR':[''], 'NARRATIVE':["Children's tuck-friendly bathing suits at Target"] })
+  new_row = pd.DataFrame({'LINK': ["https://www.facebook.com/ToddStarnesFNC/posts/pfbid0ZZhDixJQuaFoB8VLNYXuJrgd1oKnxuBvYLmMR5YeoD4CdxYxpu5cedAvTcwgWXFAl"], 'AUTHOR': ["Todd Starnes"], 'CONTENT': ["Tim Walz signed a law putting tampons in boys' bathrooms in taxpayer-funded schools. "], 'REACTIONS':[445.0], 'COMMENTS':[262.0], 'SHARES':[287.0], 'NARRATIVE':"Tim Walz mandated tampons in boys' bathrooms"})
+  fb_df = pd.concat([fb_df, new_row], ignore_index=True)
+  fb_df = pd.concat([fb_df,new_row1], ignore_index=True)
+  fb_df.dropna(inplace=True)
+
+def add_narrative_desc():
+  fb_df.loc[fb_df['NARRATIVE'] == "walz_tampons_engagements", 'NARRATIVE'] = "Tim Walz mandated tampons in boys' bathrooms"
+  fb_df.loc[fb_df['NARRATIVE'] == "lakewood_shooter_engagements", 'NARRATIVE'] = "Lakewood Church shooter identified as transgender"
+  fb_df.loc[fb_df['NARRATIVE'] == "target_suits_engagements", 'NARRATIVE'] = "Children's tuck-friendly bathing suits at Target"
+  twitter_df.loc[twitter_df['NARRATIVE'] == "target_suits_engagements", 'NARRATIVE'] = "Children's tuck-friendly bathing suits at Target"
+  twitter_df.loc[twitter_df['NARRATIVE'] == "lakewood_shooter_engagements", 'NARRATIVE'] = "Lakewood Church shooter identified as transgender"
+  twitter_df.loc[twitter_df['NARRATIVE'] == "walz_tampons_engagements", 'NARRATIVE'] = "Tim Walz mandated tampons in boys' bathrooms"
+
 
 all_data = pd.concat([fb_df, fbcontrol_df])
 new_order = [0,2,3,1]

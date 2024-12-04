@@ -1,11 +1,8 @@
-from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from typing import Tuple
 from enum import Enum
-from .content_scraper import *
+from content_scraper import *
 
 
 '''
