@@ -4,6 +4,11 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 
+'''
+Scrapes the OP-Ed specific data from the 
+links folder and organizes the performance metrics into 
+json files in the output folder
+'''
 def scrape_lgbtq_data():
     # start web driver for scraping
     chrome_options = Options()
@@ -20,12 +25,9 @@ def scrape_lgbtq_data():
     input("finished")
     driver.quit()
 
-''' This file is the main file which handles creating the scraper objects and scraping all data from links'''
-
 if __name__ == "__main__":
    
-
-    # now process dataframes
+    scrape_lgbtq_data()
 
 
     # now visualize
