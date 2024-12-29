@@ -10,7 +10,7 @@ from .content_scraper import *
 @author: Lillie Ayer
 
 ** Purpose:
-implements ContentScraperInterface with supporting implementations for scraping various post types on faceook'''
+implements ContentScraperInterface with supporting implementations for scraping various post types on FaceBook'''
 
 class FBScraper(ContentScraperInterface):
 
@@ -22,6 +22,7 @@ class FBScraper(ContentScraperInterface):
         COMMENTS_SHARES = "//div[@role='button']//span[starts-with(@class, 'html-span') and text()]"
 
     # video content doesn't show public shares
+    # not used in OP ed data
     class FBVideo(Enum):
         # CONTENT = "//div[@role='banner']/following-sibling::div[1]//div[not(@role='tablist') and not(@role='tab') and not(@role='none')]//span[text()]"
         REACTIONS = "//span[@aria-label='See who reacted to this' and @role='toolbar']/following-sibling::*[1]//span[text()]"
@@ -60,7 +61,7 @@ class FBScraper(ContentScraperInterface):
                         count = super().clean_metric(count)
                     engagements[metric.name] = count
                 else:
-                    # grabs comments and shares at the same time --> only occurs in fb posts DOM
+                    # grabs comments and shares at the same time --> only occurs for fb posts 
                     fb_insights = WebDriverWait(self.driver, 10).until( EC.presence_of_all_elements_located((By.XPATH, FBScraper.FBPost.COMMENTS_SHARES.value)))
                     engagements['COMMENTS'] = super().clean_metric(fb_insights[0].text)
                     engagements['SHARES'] = super().clean_metric(fb_insights[1].text)
