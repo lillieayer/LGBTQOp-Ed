@@ -5,17 +5,17 @@ from src.scrapers.fb_scraper import FBScraper
 
 @pytest.fixture
 def mock_fb_scraper(mock_driver):
-    return FBScraper(mock_driver)
+    yield FBScraper(mock_driver)
 
 # mock data reactions, comments, shares etc updated on 12/29/2024
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def fb_reel_mock_data():
-    return {'LINK': "https://www.facebook.com/reel/592654566749105", 'REACTIONS': 3700.0, 'COMMENTS': 202.0, 'SHARES': 34.0 }
+    yield {'LINK': "https://www.facebook.com/reel/592654566749105", 'REACTIONS': 3700.0, 'COMMENTS': 202.0, 'SHARES': 34.0 }
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def fb_post_mock_data():
-   return {'LINK': "https://www.facebook.com/photo/?fbid=1049350047232097&set=a.568969405270166", 'AUTHOR':'Memes', 'CONTENT': "Accurate.", 'REACTIONS': 6300.0, 'COMMENTS': 348.0, 'SHARES': 971.0 }
+   yield {'LINK': "https://www.facebook.com/photo/?fbid=1049350047232097&set=a.568969405270166", 'AUTHOR':'Memes', 'CONTENT': "Accurate.", 'REACTIONS': 6300.0, 'COMMENTS': 348.0, 'SHARES': 971.0 }
 
 #*** Black Box Testing for FB Scraper ***
     
