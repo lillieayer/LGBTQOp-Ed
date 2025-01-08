@@ -24,14 +24,10 @@ def scrape_lgbtq_data():
     # finish web driver for scraping
     input("finished")
     driver.quit()
-
+# https://x.com/PlayStation/status/1870954467849351217
+# 'https://x.com/charliekirk11/status/1826463097005244852'
+# 
 if __name__ == "__main__":
-    chrome_options = Options()
-    driver = webdriver.Chrome(options=chrome_options)
-    twitter_scraper = TwitterScraper(driver)
-    result = twitter_scraper.extract_content_from_link('https://x.com/charliekirk11/status/1826463097005244852')
-    print(result)
-    
-
+    scrape_lgbtq_data()
 
     # now visualize

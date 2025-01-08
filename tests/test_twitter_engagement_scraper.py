@@ -8,10 +8,9 @@ def mock_tweet_scraper(mock_driver):
     yield TwitterScraper(mock_driver)
 
 # mock data reactions, comments, shares etc updated on 12/29/2024
-
 @pytest.fixture
 def tweet_mock_data():
-    yield {'LINK': "", 'CONTENT': "The Postal Service has a new stamp honoring the women cryptologists, who broke the codes in World War II. Women had never been trusted with such high-level work, let alone counted on to win a war. My mom was one of them. She carried the secrets to her grave. Thank you all.", 'AUTHOR': "Bill Nye",'RETWEETS': 384.0, 'REPLIES': 39.0, 'LIKES': 2200.0 }
+    yield {'LINK': "https://x.com/PlayStation/status/1870954467849351217", 'CONTENT': "Name a hidden gem video game you're always recommending 💎", 'AUTHOR': "PlayStation",'RETWEETS': 1400.0, 'REPLIES': 4800.0, 'LIKES': 14000.0 }
 
 #*** Black Box Testing for Twitter Scraper ***
     
